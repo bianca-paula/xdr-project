@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { deleteSensor } from '../services/sensors';
+import { useNavigate } from 'react-router-dom';
 
 const SensorsList = () => {
+    const navigate = useNavigate()
+
     const [sensors, setSensors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -24,6 +28,14 @@ const SensorsList = () => {
             });
     }, []);  // Empty dependency array ensures this runs only once
 
+    const handleOnDelete = async (e, sensorId) => {
+        e.preventDefault();
+
+        await deleteSensor(sensorId)
+
+        setSensors(prevSensors => prevSensors.filter(s => s.id !== sensorId))
+    } 
+
     if (loading) return <div>Loading sensors...</div>;  // Display loading message
     if (error) return <div>{error}</div>;  // Display error message
 
@@ -33,7 +45,11 @@ const SensorsList = () => {
             <ul>
                 {sensors.map((sensor) => (
                     <li key={sensor.id}>
-                        <strong>{sensor.name}</strong>: {sensor.status}
+                        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                            <div> <strong>{sensor.name}</strong>: {sensor.status}</div>
+                            <button onClick={() => navigate(`/update-sensor/${sensor.id}`)}>Edit</button>
+                            <button onClick={(e) => handleOnDelete(e, sensor.id)}>Delete</button>
+                        </div>
                     </li>
                 ))}
             </ul>
